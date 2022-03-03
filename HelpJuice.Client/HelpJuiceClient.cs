@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using HelpJuice.Client.Commands;
@@ -11,6 +14,7 @@ using HelpJuice.Client.Models;
 using HelpJuice.Client.Queries;
 using HelpJuice.Client.Queries.Models;
 using HelpJuice.Client.Responses;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HelpJuice.Client
 {
@@ -20,11 +24,13 @@ namespace HelpJuice.Client
     public class HelpJuiceClient
     {
         /// <param name="apiUrl">The knowledge base URL/api/v3/. (youraccountname.helpjuice.com/api/v3/)</param>
-        /// <param name="apiKey">
-        ///     <see href="https://help.helpjuice.com/en_US/API/284079-how-do-i-get-my-api-key">The API key</see>
+        /// <param name="apiPublicKey">
+        ///     <see href="https://help.helpjuice.com/en_US/API/284079-how-do-i-get-my-api-key">The API public key</see>
         /// </param>
-        public HelpJuiceClient(string apiUrl, string apiKey)
+        public HelpJuiceClient(string apiUrl, string apiPublicKey)
         {
+            _apiPublicKey = apiPublicKey;
+
             _client = new HttpClient(new HttpClientHandler
             {
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
@@ -34,7 +40,7 @@ namespace HelpJuice.Client
             };
 
             _client.DefaultRequestHeaders.Accept.Clear();
-            _client.DefaultRequestHeaders.Add("Authorization", $"{apiKey}");
+            _client.DefaultRequestHeaders.Add("Authorization", $"{apiPublicKey}");
             _client.DefaultRequestHeaders.Add("User-Agent", "PostmanRuntime/7.28.4"); // Help Juice throws status 500 without this header when leveraging their search endpoint. /sob /sigh.
             _client.DefaultRequestHeaders.Add("Accept", "*/*");
             _client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip,deflate,br");
@@ -42,6 +48,20 @@ namespace HelpJuice.Client
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
+        /// <param name="apiUrl">The knowledge base URL/api/v3/. (youraccountname.helpjuice.com/api/v3/)</param>
+        /// <param name="apiPublicKey">
+        ///     <see href="https://help.helpjuice.com/en_US/API/284079-how-do-i-get-my-api-key">The API public key</see>
+        /// </param>
+        /// <param name="apiSecretKey">
+        ///     <see href="https://help.helpjuice.com/en_US/API/284079-how-do-i-get-my-api-key">The API secret key</see>
+        /// </param>
+        public HelpJuiceClient(string apiUrl, string apiPublicKey, string apiSecretKey) : this(apiUrl, apiPublicKey)
+        {
+            _apiSecretKey = apiSecretKey;
+        }
+
+        private string _apiPublicKey { get; }
+        private string _apiSecretKey { get; }
         private HttpClient _client { get; }
 
         /// <summary>
@@ -351,6 +371,39 @@ namespace HelpJuice.Client
             return response.HasException ? Result<AccountSettings>.Fail(response.Exception) : Result<AccountSettings>.Success(response.Payload.AccountSettings);
         }
 
+        /// <summary>
+        /// <see href="https://help.helpjuice.com/en_US/authentication/sso-with-json-web-token">Open Web Browser with Single Sign On Url + Json Web Token.</see>
+        /// </summary>
+        /// <param name="ssoUrl">The SSO URL?jwt= (https://helpjuice.com/jwt/YOUR_SUBDOMAIN?jwt=GetSingleSignOnJsonWebToken)"</param>
+        /// <returns></returns>
+        public void OpenWebBrowserForSingleSignOnWithJsonWebToken(string ssoUrl, string email)
+        {
+
+            ssoUrl = ssoUrl.EndsWith("?jwt=") ? ssoUrl : $"{ssoUrl}?jwt=";
+            Process.Start($"{ssoUrl}{GetSingleSignOnJsonWebToken(email)}");
+        }
+
+        /// <summary>
+        /// Get Single Sign On Json Web Token.
+        /// </summary>
+        /// <returns></returns>
+        public string GetSingleSignOnJsonWebToken(string email)
+        {
+            if (string.IsNullOrWhiteSpace(_apiSecretKey))
+            {
+                throw new Exception("API Secret key required.");
+            }
+
+            var jwtPayload = new JwtPayload
+            {
+                { "jti", Guid.NewGuid().ToString() },
+                { "iat", Convert.ToInt32((DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalSeconds) },
+                { "email", email }
+            };
+
+            var securityToken = new JwtSecurityToken(new JwtHeader(new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_apiSecretKey)), "HS256")), jwtPayload);
+            return (new JwtSecurityTokenHandler()).WriteToken(securityToken);
+        }
 
         /// <summary>
         ///     Client's HTTP/CRUD methods

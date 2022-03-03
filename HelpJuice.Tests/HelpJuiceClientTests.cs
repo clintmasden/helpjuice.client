@@ -27,6 +27,18 @@ namespace HelpJuice.Tests
             _client = new HelpJuiceClient(helpJuiceContent[0], helpJuiceContent[1]);
         }
 
+        /// <summary>
+        /// Requires API Secret Key in constructor
+        /// </summary>
+        [TestMethod]
+        public void OpenWebBrowserForSingleSignOnWithJsonWebToken_Pass()
+        {
+            var result = _client.GetSingleSignOnJsonWebToken("FunctionalTest@FunctionalTest.com");
+            Assert.IsNotNull(result);
+
+            _client.OpenWebBrowserForSingleSignOnWithJsonWebToken("https://domain.com/jwt/domain?jwt=", "FunctionalTest@FunctionalTest.com");
+        }
+
         [TestMethod]
         public async Task GetSearches_Pass()
         {

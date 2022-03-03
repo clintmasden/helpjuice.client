@@ -3,3 +3,8 @@
 ################################################################################
 
 /HelpJuice.Client/obj
+/HelpJuice.Client/bin/Debug
+/.vs
+/HelpJuice.Tests/obj
+/HelpJuice.Tests/bin/Debug/net461
+/HelpJuice.Client/bin/Release

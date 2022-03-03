@@ -10,13 +10,14 @@
     <Description>A client for HelpJuice API version 3.</Description>
     <RepositoryUrl>https://github.com/clintmasden/helpjuice.client</RepositoryUrl>
     <PackageTags>HelpJuice Client API helpjuice.com</PackageTags>
-    <Version>1.0.0.0</Version>
+    <Version>1.0.0.1</Version>
     <NeutralLanguage>en</NeutralLanguage>
-    <PackageReleaseNotes>initial deployment</PackageReleaseNotes>
+    <PackageReleaseNotes>implemeneted single sign on with json web token</PackageReleaseNotes>
     <PackageLicenseFile>mit-license.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.16.0" />
     <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
   </ItemGroup>
 
