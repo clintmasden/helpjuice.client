@@ -63,5 +63,12 @@ namespace HelpJuice.Client.Commands.Models
         /// </summary>
         [JsonPropertyName("contributor_user_ids")]
         public int[] ContributorUserIds { get; set; }
+
+
+        /// <summary>
+        /// Created By User Id
+        /// </summary>
+        [JsonPropertyName("created_by_id")]
+        public bool CreatedByUserId { get; set; }
     }
 }
