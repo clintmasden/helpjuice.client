@@ -69,6 +69,6 @@ namespace HelpJuice.Client.Commands.Models
         /// Created By User Id
         /// </summary>
         [JsonPropertyName("created_by_id")]
-        public bool CreatedByUserId { get; set; }
+        public int CreatedByUserId { get; set; }
     }
 }

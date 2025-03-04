@@ -10,9 +10,9 @@
     <Description>A client for HelpJuice API version 3.</Description>
     <RepositoryUrl>https://github.com/clintmasden/helpjuice.client</RepositoryUrl>
     <PackageTags>HelpJuice Client API helpjuice.com</PackageTags>
-    <Version>1.0.0.2</Version>
+    <Version>1.0.0.3</Version>
     <NeutralLanguage>en</NeutralLanguage>
-    <PackageReleaseNotes>included created by user id on article</PackageReleaseNotes>
+    <PackageReleaseNotes>corrected created by user id on article</PackageReleaseNotes>
     <PackageLicenseFile>mit-license.txt</PackageLicenseFile>
   </PropertyGroup>
 
